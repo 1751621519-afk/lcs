@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TO：李春升</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #111111;
+    --bg-black: #000000;
+    --rose: #E4007F;
+    --rose-dark: #A52A5E;
+    --white: #FFFFFF;
+    --warm-white: #F5F2EA;
+    --warm-white-60: rgba(245,242,234,0.6);
+    --gold: #D4AF37;
+    --transition-speed: 0.6s;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: 'Noto Sans SC', 'Inter', sans-serif;
+    background: var(--bg-black);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ── Screen Container ── */
+  .screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-speed) ease-in-out;
+    z-index: 1;
+    padding: 2rem;
+  }
+  .screen.active {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 2;
+  }
+  .screen.paused {
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── Cover Screen (Screen 1) ── */
+  .screen-cover {
+    background: linear-gradient(180deg, #E4007F 0%, #FF5DA8 35%, #111111 100%);
+    flex-direction: column;
+    text-align: center;
+  }
+  .cover-label {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    color: var(--white);
+    margin-bottom: 1rem;
+  }
+  .cover-name {
+    font-size: clamp(4rem, 10vw, 8rem);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    line-height: 1.1;
+  }
+  .cover-hint {
+    position: absolute;
+    bottom: 3rem;
+    font-size: 0.9rem;
+    color: var(--warm-white-60);
+    letter-spacing: 0.15em;
+  }
+
+  /* ── Theme Screen (Screen 2) ── */
+  .screen-theme {
+    background: var(--bg-dark);
+    flex-direction: column;
+    text-align: center;
+  }
+  .theme-main {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 700;
+    color: var(--rose);
+    letter-spacing: 3px;
+    line-height: 1.2;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+  }
+  .screen-theme.active .theme-main {
+    opacity: 1;
+    transition-delay: 0.15s;
+  }
+  .theme-sub {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 400;
+    color: var(--warm-white);
+    margin-top: 1rem;
+    letter-spacing: normal;
+    line-height: 1.5;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+  }
+  .screen-theme.active .theme-sub {
+    opacity: 1;
+    transition-delay: 0.7s;
+  }
+
+  /* ── Text Screens ── */
+  .screen-text-dark {
+    background: var(--bg-dark);
+  }
+  .screen-text-black {
+    background: var(--bg-black);
+  }
+  .text-content {
+    font-size: clamp(1.3rem, 2.8vw, 1.9rem);
+    font-weight: 300;
+    color: var(--warm-white);
+    text-align: center;
+    line-height: 2;
+    letter-spacing: 0.05em;
+    max-width: 85vw;
+  }
+  .text-content .hl {
+    color: var(--rose);
+    font-weight: 500;
+  }
+  .text-content.sub {
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    color: var(--warm-white-60);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── Photo Screens ── */
+  .screen-photo {
+    background: var(--bg-dark);
+    padding: 2rem;
+  }
+  .screen-photo img {
+    max-width: 75vw;
+    max-height: 70vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  /* ── Easter Egg Screen ── */
+  .screen-easter {
+    background: var(--bg-black);
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .btn-gift {
+    font-family: inherit;
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    background: var(--rose);
+    border: none;
+    border-radius: 50px;
+    padding: 1rem 2.5rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn-gift:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(228,0,127,0.4);
+  }
+  .btn-gift:active { transform: scale(0.97); }
+  .gift-reveal {
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    color: var(--warm-white);
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    min-height: 1.5em;
+    text-align: center;
+  }
+  .gift-reveal.show { opacity: 1; }
+
+  /* ── Easter Egg Explanation (merged) ── */
+  .easter-hint {
+    font-size: 1.5rem;
+    color: var(--warm-white);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid rgba(245,242,234,0.3);
+    padding-bottom: 0.3rem;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .easter-hint.show { opacity: 1; }
+  .easter-hint.show:hover { border-bottom-color: rgba(245,242,234,0.7); }
+  .easter-explanation {
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    color: var(--warm-white);
+    text-align: center;
+    line-height: 2.2;
+    letter-spacing: 0.05em;
+    max-width: 80vw;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+  }
+  .easter-explanation.show { opacity: 1; }
+  .easter-big-666 {
+    font-size: clamp(4rem, 8vw, 6rem);
+    font-weight: 700;
+    color: var(--rose);
+    text-shadow: 0 0 25px #E4007F, 0 0 50px #E4007F, 0 0 75px rgba(228,0,127,0.6);
+    margin-top: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.8s ease 0.3s;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .easter-big-666.show {
+    opacity: 1;
+    animation: breathe 4s ease-in-out infinite;
+  }
+  .easter-big-666.show:hover {
+    animation: none;
+    color: #ff1a8c;
+    text-shadow: 0 0 35px #E4007F, 0 0 65px #E4007F, 0 0 100px rgba(228,0,127,0.75), 0 0 140px rgba(228,0,127,0.4);
+  }
+  @keyframes breathe {
+    0%, 100% {
+      text-shadow: 0 0 25px #E4007F, 0 0 50px rgba(228,0,127,0.7), 0 0 75px rgba(228,0,127,0.4);
+    }
+    50% {
+      text-shadow: 0 0 25px #E4007F, 0 0 50px #E4007F, 0 0 75px rgba(228,0,127,0.6), 0 0 100px rgba(228,0,127,0.3);
+    }
+  }
+
+  /* ── Roast Theater ── */
+  .roast-btn {
+    font-family: inherit;
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    color: var(--warm-white);
+    background: rgba(245,242,234,0.08);
+    border: 1px solid var(--rose);
+    border-radius: 50px;
+    padding: 0.8rem 2rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.5s ease, background 0.3s, border-color 0.3s;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .roast-btn.show {
+    opacity: 1;
+    animation: breathe-roast 3s ease-in-out infinite;
+  }
+  .roast-btn.show:hover {
+    animation: none;
+    background: rgba(245,242,234,0.2);
+    border-color: #ff1a8c;
+  }
+  @keyframes breathe-roast {
+    0%, 100% { box-shadow: 0 0 8px rgba(228,0,127,0.3); }
+    50%      { box-shadow: 0 0 18px rgba(228,0,127,0.55); }
+  }
+  .roast-text {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--warm-white);
+    letter-spacing: 0.06em;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+  }
+  .roast-text.show {
+    opacity: 1;
+    animation: breathe 4s ease-in-out infinite;
+  }
+  .roast-text.show:hover {
+    animation: none;
+    text-shadow: 0 0 30px #E4007F, 0 0 60px rgba(228,0,127,0.6);
+  }
+  .roast-text.noclick {
+    cursor: default;
+  }
+  .roast-text.noclick:hover { text-shadow: none; }
+  .roast-sub {
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    color: var(--warm-white);
+    letter-spacing: 0.05em;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+  }
+  .roast-sub.show {
+    opacity: 1;
+    animation: breathe-roast 3s ease-in-out infinite;
+  }
+  .roast-sub.show:hover {
+    animation: none;
+    text-shadow: 0 0 20px rgba(228,0,127,0.5);
+  }
+  .roast-arrow {
+    font-size: 1.8rem;
+    color: var(--warm-white-60);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    animation: none;
+  }
+  .roast-arrow.show {
+    opacity: 1;
+    animation: arrow-bounce 1.2s ease-in-out infinite;
+  }
+  @keyframes arrow-bounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(12px); }
+  }
+
+  /* ── Reset Zone ── */
+  .reset-zone {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    z-index: 99999;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* ── Back Button ── */
+  .btn-back {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 100;
+    background: rgba(245,242,234,0.15);
+    border: 1px solid rgba(245,242,234,0.2);
+    color: var(--warm-white);
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .btn-back:hover {
+    background: rgba(245,242,234,0.3);
+    border-color: rgba(245,242,234,0.5);
+  }
+  .btn-back.hidden { opacity: 0; pointer-events: none; }
+
+  /* ── Progress Indicator ── */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: var(--rose);
+    z-index: 101;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .screen { padding: 1.5rem; }
+    .text-content { font-size: 1.1rem; max-width: 90vw; }
+    .btn-back { bottom: 16px; left: 16px; font-size: 0.85rem; padding: 0.45rem 0.9rem; }
+    .cover-name { font-size: 3.2rem; }
+    .theme-main { font-size: 2.5rem; }
+  }
+  @media (max-width: 480px) {
+    .text-content { font-size: 1rem; }
+    .cover-name { font-size: 2.6rem; }
+    .theme-main { font-size: 2rem; }
+    .theme-sub { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress-bar"></div>
+<button class="btn-back hidden" id="btn-back" aria-label="返回上一屏">← 返回上一页</button>
+<div class="reset-zone" id="reset-zone"></div>
+
+<div id="app"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ══════════════════════════════════════
+  // Screen Data
+  // ══════════════════════════════════════
+  const screens = [
+    // 屏1: 封面
+    { id: 'cover' },
+    // 屏2: 主题
+    { id: 'theme' },
+    // 屏3-6: 故事的开头 (bg #111111)
+    { id: 'text-dark', text: '故事是从什么时候开始的？' },
+    { id: 'text-dark', text: '是那台 MP3？还是原神？还是宿舍熄灯后的某次聊天？' },
+    { id: 'text-dark', text: '其实已经记不清了。' },
+    { id: 'text-dark', text: '但故事就是从那里开始的。' },
+    // 屏7-15: 照片流一 (chusan-1 ~ chusan-9)
+    { id: 'photo', src: 'images/chusan-1.jpg' },
+    { id: 'photo', src: 'images/chusan-2.jpg' },
+    { id: 'photo', src: 'images/chusan-3.jpg' },
+    { id: 'photo', src: 'images/chusan-4.jpg' },
+    { id: 'photo', src: 'images/chusan-5.jpg' },
+    { id: 'photo', src: 'images/chusan-6.jpg' },
+    { id: 'photo', src: 'images/chusan-7.jpg' },
+    { id: 'photo', src: 'images/chusan-8.jpg' },
+    { id: 'photo', src: 'images/chusan-9.jpg' },
+    // 屏16-18: 黑屏隔断
+    { id: 'text-black', text: '后来想想，' },
+    { id: 'text-black', text: '很多事情都已经记不清了。' },
+    { id: 'text-black', text: '但关系好像就是从那时候开始变好的。' },
+    // 屏17-25: 照片流二 (gaozhong-1 ~ gaozhong-9)
+    { id: 'photo', src: 'images/gaozhong-1.jpg' },
+    { id: 'photo', src: 'images/gaozhong-2.jpg' },
+    { id: 'photo', src: 'images/gaozhong-3.jpg' },
+    { id: 'photo', src: 'images/gaozhong-4.jpg' },
+    { id: 'photo', src: 'images/gaozhong-5.jpg' },
+    { id: 'photo', src: 'images/gaozhong-6.jpg' },
+    { id: 'photo', src: 'images/gaozhong-7.jpg' },
+    { id: 'photo', src: 'images/gaozhong-8.jpg' },
+    { id: 'photo', src: 'images/gaozhong-9.jpg' },
+    // 屏26-32: 黑屏隔断 (分步)
+    { id: 'text-black', text: '后来。' },
+    { id: 'text-black', text: '你去了普通高中。' },
+    { id: 'text-black', text: '我去了职专。' },
+    { id: 'text-black', text: '从每天见面，变成偶尔见面。' },
+    { id: 'text-black-pause' },
+    { id: 'text-black', text: '但好像。' },
+    { id: 'text-black', text: '也没什么变化。' },
+    // 屏33-45: 照片流三 (gaozhong-10 ~ gaozhong-22)
+    { id: 'photo', src: 'images/gaozhong-10.jpg' },
+    { id: 'photo', src: 'images/gaozhong-11.jpg' },
+    { id: 'photo', src: 'images/gaozhong-12.jpg' },
+    { id: 'photo', src: 'images/gaozhong-13.jpg' },
+    { id: 'photo', src: 'images/gaozhong-14.jpg' },
+    { id: 'photo', src: 'images/gaozhong-15.jpg' },
+    { id: 'photo', src: 'images/gaozhong-16.jpg' },
+    { id: 'photo', src: 'images/gaozhong-17.jpg' },
+    { id: 'photo', src: 'images/gaozhong-18.jpg' },
+    { id: 'photo', src: 'images/gaozhong-19.jpg' },
+    { id: 'photo', src: 'images/gaozhong-20.jpg' },
+    { id: 'photo', src: 'images/gaozhong-21.jpg' },
+    { id: 'photo', src: 'images/gaozhong-22.jpg' },
+    // 屏46: 黑屏隔断
+    { id: 'text-black', text: '回头翻相册才发现，留下来的照片比想象中还多。' },
+    // 屏47: 黑屏隔断
+    { id: 'text-black', text: '每次见面都能聊很久。' },
+    // 屏48-51: 照片流四 (gaozhong-23 ~ gaozhong-26)
+    { id: 'photo', src: 'images/gaozhong-23.jpg' },
+    { id: 'photo', src: 'images/gaozhong-24.jpg' },
+    { id: 'photo', src: 'images/gaozhong-25.jpg' },
+    { id: 'photo', src: 'images/gaozhong-26.jpg' },
+    // 屏52-57: 黑屏隔断 (照片收束)
+    { id: 'text-black', text: '从高一到高三。' },
+    { id: 'text-black', text: '谢谢你参加我这几年的生日。' },
+    { id: 'text-black', text: '还有那封手写信。' },
+    { id: 'text-black', text: '直到现在，我依然觉得它很珍贵。' },
+    { id: 'text-black-pause' },
+    { id: 'text-black', text: '<span class="hl">谢谢。</span>' },
+    // 屏58-59: 黑屏隔断
+    { id: 'text-black', text: '这一年，大家都很忙。' },
+    { id: 'text-black', text: '高考越来越近了。' },
+    // 屏60-61: 抵达
+    { id: 'text-black', text: '高考结束了。' },
+    { id: 'text-black', text: '恭喜你，终于抵达这一站。' },
+    // 屏62-70: 收尾
+    { id: 'text-black', text: '<span class="hl">18</span> 岁快乐。' },
+    { id: 'text-black', text: '毕业快乐。' },
+    { id: 'text-black', text: '2021年的时候。' },
+    { id: 'text-black', text: '应该谁都没想到。' },
+    { id: 'text-black', text: '一转眼。' },
+    { id: 'text-black', text: '已经六年了。' },
+    { id: 'text-black', text: 'To：<span class="hl">李春升</span>' },
+    { id: 'text-black', text: '<span class="sub">2021 - 2026</span>' },
+    { id: 'text-black', text: '<span class="sub">未完待续...</span>' },
+    // 屏73: 彩蛋
+    { id: 'easter' },
+  ];
+
+  const totalScreens = screens.length;
+
+  // ══════════════════════════════════════
+  // State
+  // ══════════════════════════════════════
+  let currentIndex = 0;
+  let isTransitioning = false;
+
+  // ══════════════════════════════════════
+  // DOM
+  // ══════════════════════════════════════
+  const app = document.getElementById('app');
+  const progressBar = document.getElementById('progress-bar');
+  const btnBack = document.getElementById('btn-back');
+
+  // ══════════════════════════════════════
+  // Create all screen elements
+  // ══════════════════════════════════════
+  const screenEls = [];
+
+  screens.forEach((data, i) => {
+    const el = document.createElement('div');
+    el.className = 'screen';
+    el.dataset.index = i;
+
+    switch (data.id) {
+      case 'cover':
+        el.classList.add('screen-cover');
+        el.innerHTML = `
+          <div class="cover-label">TO：</div>
+          <div class="cover-name">李春升</div>
+          <div class="cover-hint">请签收你的18岁</div>`;
+        break;
+
+      case 'theme':
+        el.classList.add('screen-theme');
+        el.innerHTML = `
+          <div class="theme-main">少年十八 山海可平</div>
+          <div class="theme-sub">祝李春升 成人快乐 毕业快乐</div>`;
+        break;
+
+      case 'text-dark':
+        el.classList.add('screen-text-dark');
+        el.innerHTML = `<div class="text-content">${data.text}</div>`;
+        break;
+
+      case 'text-black':
+        el.classList.add('screen-text-black');
+        el.innerHTML = `<div class="text-content">${data.text}</div>`;
+        break;
+
+      case 'text-black-pause':
+        el.classList.add('screen-text-black');
+        el.innerHTML = ''; // Empty pause screen
+        break;
+
+      case 'photo':
+        el.classList.add('screen-photo');
+        el.innerHTML = `<img src="${data.src}" alt="" loading="lazy">`;
+        break;
+
+      case 'easter':
+        el.classList.add('screen-easter');
+        el.innerHTML = `
+          <button class="btn-gift" id="btn-gift">领取生日礼物</button>
+          <div class="gift-reveal" id="gift-text"></div>
+          <div class="easter-hint" id="easter-hint">为什么是666？</div>
+          <div class="easter-explanation" id="easter-explanation-text"></div>
+          <div class="easter-big-666" id="easter-big-666">666</div>`;
+        break;
+    }
+
+    app.appendChild(el);
+    screenEls.push(el);
+  });
+
+  // ══════════════════════════════════════
+  // Show / Hide screens
+  // ══════════════════════════════════════
+  function showScreen(index) {
+    // Hide all screens first
+    screenEls.forEach(el => {
+      el.classList.remove('active');
+      el.classList.add('paused');
+    });
+    // Show target
+    screenEls[index].classList.add('active');
+    screenEls[index].classList.remove('paused');
+
+    // Update progress
+    progressBar.style.width = ((index + 1) / totalScreens * 100) + '%';
+
+    // Toggle back button
+    if (index === 0) {
+      btnBack.classList.add('hidden');
+    } else {
+      btnBack.classList.remove('hidden');
+    }
+
+    // Init easter egg if needed
+    if (screens[index].id === 'easter') {
+      initEasterEgg();
+    }
+  }
+
+  // ══════════════════════════════════════
+  // Navigation
+  // ══════════════════════════════════════
+  function goNext() {
+    if (isTransitioning) return;
+    if (currentIndex >= totalScreens - 1) return;
+    isTransitioning = true;
+    currentIndex++;
+    showScreen(currentIndex);
+    setTimeout(() => { isTransitioning = false; }, 650);
+  }
+
+  function goPrev() {
+    if (isTransitioning) return;
+    if (currentIndex <= 0) return;
+    isTransitioning = true;
+    screenEls[currentIndex].classList.remove('active');
+    currentIndex--;
+    showScreen(currentIndex);
+    setTimeout(() => { isTransitioning = false; }, 650);
+  }
+
+  // ══════════════════════════════════════
+  // Event Listeners
+  // ══════════════════════════════════════
+
+  // Click on body (any blank area)
+  document.body.addEventListener('click', (e) => {
+    // Don't advance if clicking on interactive elements
+    if (e.target.closest('#btn-gift') || e.target.closest('#btn-back') || e.target.closest('#easter-hint') || e.target.closest('#easter-big-666') || e.target.closest('.roast-btn') || e.target.closest('.roast-text') || e.target.closest('.roast-sub')) return;
+    goNext();
+  });
+
+  // Touch for mobile
+  document.body.addEventListener('touchend', (e) => {
+    if (e.target.closest('#btn-gift') || e.target.closest('#btn-back') || e.target.closest('#easter-hint') || e.target.closest('#easter-big-666') || e.target.closest('.roast-btn') || e.target.closest('.roast-text') || e.target.closest('.roast-sub')) return;
+    // Prevent double-fire with click
+    e.preventDefault();
+    goNext();
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      goNext();
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goPrev();
+    }
+  });
+
+  // Back button
+  btnBack.addEventListener('click', (e) => {
+    e.stopPropagation();
+    goPrev();
+  });
+
+  // ══════════════════════════════════════
+  // Easter Egg
+  // ══════════════════════════════════════
+  let eggClicks = 0;
+  const gifts = ['礼物① 这顿饭', '礼物② 这个网站', '礼物③ 迟到的 666'];
+
+  function initEasterEgg() {
+    eggClicks = 0;
+    const btn = document.getElementById('btn-gift');
+    const txt = document.getElementById('gift-text');
+    const hint = document.getElementById('easter-hint');
+    const expl = document.getElementById('easter-explanation-text');
+    const big666 = document.getElementById('easter-big-666');
+    if (!btn || !txt) return;
+
+    // ── Reset all ──
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+    txt.textContent = '';
+    txt.classList.remove('show');
+    if (hint) { hint.classList.remove('show'); hint.onclick = null; }
+    if (expl) { expl.classList.remove('show'); expl.innerHTML = ''; }
+    if (big666) { big666.classList.remove('show'); big666.onclick = null; }
+
+    // ── Stage 1: Gift reveal ──
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      if (eggClicks >= 3) return;
+      txt.textContent = gifts[eggClicks];
+      txt.classList.remove('show');
+      void txt.offsetWidth;
+      txt.classList.add('show');
+      eggClicks++;
+
+      if (eggClicks >= 3) {
+        // 1. Fade out button and gift text
+        btn.style.transition = 'opacity 0.6s ease';
+        btn.style.opacity = '0';
+        btn.style.pointerEvents = 'none';
+        txt.style.transition = 'opacity 0.6s ease';
+        txt.style.opacity = '0';
+
+        // ── Stage 2: First confetti ──
+        createConfetti(() => {
+          // ── Stage 3: Show clickable hint ──
+          if (hint) hint.classList.add('show');
+
+          hint.onclick = (ev) => {
+            ev.stopPropagation();
+            // Fade out hint, then reveal explanation + big 666
+            hint.classList.remove('show');
+            setTimeout(() => {
+              if (expl) {
+                expl.innerHTML = '原本想着高考前给你转666。<br>算是补上18岁的生日礼物。<br>后来想想，比起一个红包，<br>还是一起吃顿饭更有意思一点。<br>所以有了这顿饭，也有了这个网站。<br>不过666这个数字，还是给你留在这里了。';
+                expl.classList.add('show');
+              }
+              if (big666) {
+                big666.classList.add('show');
+                wireBig666(big666, hint, expl, btn, txt);
+              }
+            }, 600);
+          };
+        });
+      }
+    };
+  }
+
+  // Canvas 666 confetti — each call spawns an independent canvas
+  function createConfetti(onComplete) {
+    const cvs = document.createElement('canvas');
+    cvs.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
+    cvs.width = window.innerWidth;
+    cvs.height = window.innerHeight;
+    document.body.appendChild(cvs);
+    const ctx2d = cvs.getContext('2d');
+
+    const particles = [];
+    const colors = ['#E4007F', '#D4AF37'];
+    const totalParticles = 166;
+
+    for (let i = 0; i < totalParticles; i++) {
+      particles.push({
+        x: Math.random() * cvs.width,
+        y: Math.random() * -cvs.height * 1.5,
+        vx: (Math.random() - 0.5) * 2,
+        vy: 1 + Math.random() * 2.5,
+        size: 16 + Math.random() * 32,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.06,
+        delay: Math.random() * 2000,
+        lifetime: 4000 + Math.random() * 1500
+      });
+    }
+
+    const startTime = performance.now();
+    let hasCleared = false;
+
+    function drawFrame(now) {
+      const elapsed = now - startTime;
+      ctx2d.clearRect(0, 0, cvs.width, cvs.height);
+
+      let hasActive = false;
+      particles.forEach(p => {
+        if (elapsed < p.delay) { hasActive = true; return; }
+        const t = elapsed - p.delay;
+        if (t > p.lifetime) return;
+
+        p.y += p.vy;
+        p.x += p.vx + Math.sin(t * 0.0015 + p.x * 0.008) * 1;
+        p.rotation += p.rotSpeed;
+
+        let alpha = 1;
+        const fadeStart = p.lifetime * 0.65;
+        if (t > fadeStart) {
+          alpha = Math.max(0, 1 - (t - fadeStart) / (p.lifetime - fadeStart));
+        }
+
+        if (p.y < cvs.height + 80 && alpha > 0) {
+          hasActive = true;
+          ctx2d.save();
+          ctx2d.globalAlpha = alpha;
+          ctx2d.translate(p.x, p.y);
+          ctx2d.rotate(p.rotation);
+          ctx2d.font = `bold ${p.size}px "Inter", "Noto Sans SC", sans-serif`;
+          ctx2d.fillStyle = p.color;
+          ctx2d.textAlign = 'center';
+          ctx2d.textBaseline = 'middle';
+          ctx2d.fillText('666', 0, 0);
+          ctx2d.restore();
+        }
+      });
+
+      if (hasActive) {
+        requestAnimationFrame(drawFrame);
+      } else if (!hasCleared) {
+        hasCleared = true;
+        ctx2d.clearRect(0, 0, cvs.width, cvs.height);
+        if (onComplete) setTimeout(onComplete, 500);
+        // Fade out canvas then self-remove
+        cvs.style.transition = 'opacity 0.5s ease';
+        cvs.style.opacity = '0';
+        setTimeout(() => { if (cvs.parentNode) cvs.remove(); }, 600);
+      }
+    }
+
+    requestAnimationFrame(drawFrame);
+  }
+
+  // ══════════════════════════════════════
+  // Big 666 — localStorage-aware handler
+  // ══════════════════════════════════════
+  function wireBig666(big666, hint, expl, btn, txt) {
+    big666.onclick = (ev) => {
+      ev.stopPropagation();
+      if (localStorage.getItem('lcs_tsukkomi_done') === 'true') {
+        createConfetti();
+        return;
+      }
+      startTsukkomiTheater(big666, hint, expl, btn, txt);
+    };
+  }
+
+  // ══════════════════════════════════════
+  // Roast Theater — one-time experience
+  // ══════════════════════════════════════
+  function startTsukkomiTheater(big666, hint, expl, btn, txt) {
+    // Hide big666, explanation, and old elements during theater
+    big666.classList.remove('show');
+    if (expl) expl.classList.remove('show');
+    if (hint) hint.classList.remove('show');
+    if (btn) btn.style.opacity = '0';
+    if (txt) txt.style.opacity = '0';
+
+    const screen = big666.closest('.screen');
+    if (!screen) return;
+
+    // Helper: append an element to the screen with a class, return it
+    function makeEl(tag, cls, html) {
+      const el = document.createElement(tag);
+      el.className = cls;
+      if (html) el.innerHTML = html;
+      screen.appendChild(el);
+      return el;
+    }
+    // Helper: delay then callback
+    function delay(ms, fn) { setTimeout(fn, ms); }
+    // Helper: show with reflow
+    function show(el) {
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+    }
+    function hide(el, fn) {
+      el.classList.remove('show');
+      if (fn) delay(500, fn);
+    }
+
+    // ── Step 1: First confetti → "点一下试试？" ──
+    createConfetti(() => {
+      const btn1 = makeEl('button', 'roast-btn', '点一下试试？');
+      show(btn1);
+
+      btn1.onclick = (ev) => {
+        ev.stopPropagation();
+        hide(btn1, () => {
+          btn1.remove();
+          // ── Step 2: "结束了" ──
+          const t1 = makeEl('div', 'roast-text', '结束了');
+          show(t1);
+
+          t1.onclick = (ev2) => {
+            ev2.stopPropagation();
+            hide(t1, () => {
+              t1.remove();
+              // ── Step 3: "吗？" ──
+              const t2 = makeEl('div', 'roast-text', '吗？');
+              show(t2);
+
+              t2.onclick = (ev3) => {
+                ev3.stopPropagation();
+                hide(t2, () => {
+                  t2.remove();
+                  // ── Step 4: "好吧，结束了" + arrow + "吐槽" ──
+                  const t3 = makeEl('div', 'roast-text noclick', '好吧，结束了');
+                  show(t3);
+                  const arrow = makeEl('div', 'roast-arrow', '↓');
+                  arrow.style.marginTop = '0.5rem';
+                  delay(300, () => show(arrow));
+                  const roastBtn = makeEl('button', 'roast-btn', '吐槽');
+                  roastBtn.style.marginTop = '0.3rem';
+                  delay(500, () => show(roastBtn));
+
+                  roastBtn.onclick = (ev4) => {
+                    ev4.stopPropagation();
+                    hide(roastBtn, () => { roastBtn.remove(); arrow.remove(); t3.remove();
+                      // ── Step 5: Two roast lines + "想看…" ──
+                      const line1 = makeEl('div', 'roast-sub noclick', '我拍照真的很烂吗？');
+                      show(line1);
+                      let clickCount5 = 0;
+                      line1.onclick = (ev5) => {
+                        ev5.stopPropagation();
+                        clickCount5++;
+                        if (clickCount5 === 1) {
+                          line1.classList.add('noclick');
+                          line1.style.cursor = 'default';
+                          const line2 = makeEl('div', 'roast-sub noclick', '那没办法，毕竟这是真实的你，受着吧。');
+                          show(line2);
+                          const wantSee = makeEl('div', 'roast-sub', '想看这几张照片的真实评价吗？');
+                          delay(1200, () => show(wantSee));
+
+                          wantSee.onclick = (ev6) => {
+                            ev6.stopPropagation();
+                            hide(wantSee, () => {
+                              line1.remove(); line2.remove(); wantSee.remove();
+                              // ── Step 6: [想看] [不想看] ──
+                              const wrap = makeEl('div', '');
+                              wrap.style.cssText = 'display:flex;gap:2rem;margin-top:0.5rem;';
+                              const yesBtn = makeEl('button', 'roast-btn', '想看');
+                              const noBtn = makeEl('button', 'roast-btn', '不想看');
+                              wrap.appendChild(yesBtn);
+                              wrap.appendChild(noBtn);
+                              screen.appendChild(wrap);
+                              delay(100, () => { show(yesBtn); show(noBtn); });
+
+                              const handleChoice = (ev7) => {
+                                ev7.stopPropagation();
+                                hide(yesBtn, () => { yesBtn.remove(); noBtn.remove(); wrap.remove();
+                                  // ── Step 7: "没有。" auto-fade ──
+                                  const none = makeEl('div', 'roast-text noclick', '没有。');
+                                  none.style.cssText += 'cursor:default;';
+                                  show(none);
+                                  delay(2500, () => {
+                                    hide(none, () => {
+                                      none.remove();
+                                      // ── Step 8: Restore big666 ──
+                                      localStorage.setItem('lcs_tsukkomi_done', 'true');
+                                      if (expl) expl.classList.add('show');
+                                      big666.classList.add('show');
+                                      wireBig666(big666, hint, expl, btn, txt);
+                                      // Clean up remaining elements
+                                      screen.querySelectorAll('.roast-btn,.roast-text,.roast-sub,.roast-arrow').forEach(el => el.remove());
+                                    });
+                                  });
+                                });
+                              };
+                              yesBtn.onclick = handleChoice;
+                              noBtn.onclick = handleChoice;
+                            });
+                          };
+                        }
+                      };
+                    });
+                  };
+                });
+              };
+            });
+          };
+        });
+      };
+    });
+  }
+
+  // ══════════════════════════════════════
+  // Reset Zone — secret developer trigger
+  // ══════════════════════════════════════
+  (function() {
+    const zone = document.getElementById('reset-zone');
+    if (!zone) return;
+    let clickTimes = [];
+    zone.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const now = Date.now();
+      clickTimes.push(now);
+      // Keep only clicks within the last 1.2s
+      clickTimes = clickTimes.filter(t => now - t <= 1200);
+      if (clickTimes.length >= 5) {
+        clickTimes = [];
+        localStorage.removeItem('lcs_tsukkomi_done');
+        location.reload();
+      }
+    });
+  })();
+
+  // ══════════════════════════════════════
+  // Start
+  // ══════════════════════════════════════
+  showScreen(0);
+
+})();
+</script>
+</body>
+</html>
