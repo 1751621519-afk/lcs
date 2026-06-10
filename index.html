@@ -401,9 +401,120 @@
     .theme-main { font-size: 2rem; }
     .theme-sub { font-size: 1.3rem; }
   }
+
+  /* ── Password Gate ── */
+  .pw-gate {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 99999;
+    background: var(--bg-black);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+  .pw-gate.unlocked {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .pw-gate-label {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.85rem;
+    color: var(--warm-white-60);
+    letter-spacing: 0.15em;
+  }
+  .pw-gate-input {
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    color: var(--white);
+    background: rgba(245,242,234,0.06);
+    border: 1px solid rgba(245,242,234,0.15);
+    border-radius: 8px;
+    padding: 0.8rem 1.2rem;
+    width: 220px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  .pw-gate-input:focus {
+    border-color: var(--rose);
+  }
+  .pw-gate-btn {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    color: var(--white);
+    background: var(--rose);
+    border: none;
+    border-radius: 50px;
+    padding: 0.65rem 2.2rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .pw-gate-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 20px rgba(228,0,127,0.35);
+  }
+  .pw-gate-msg {
+    font-size: 0.8rem;
+    color: #ff6b8a;
+    min-height: 1.2em;
+    transition: opacity 0.3s ease;
+  }
 </style>
 </head>
 <body>
+
+<!-- ═══ 密码验证层 ═══ -->
+<div class="pw-gate" id="pw-gate">
+  <div class="pw-gate-label">请输入密码以继续</div>
+  <input type="password" class="pw-gate-input" id="pw-input" placeholder="······" maxlength="10" autocomplete="off">
+  <button class="pw-gate-btn" id="pw-btn">验证</button>
+  <div class="pw-gate-msg" id="pw-msg"></div>
+</div>
+<script>
+(function() {
+  var gate = document.getElementById('pw-gate');
+  var input = document.getElementById('pw-input');
+  var btn = document.getElementById('pw-btn');
+  var msg = document.getElementById('pw-msg');
+  var PASSWORD = '271214';
+
+  // 已通过验证 → 直接放行
+  if (sessionStorage.getItem('_pw_ok') === PASSWORD) {
+    gate.classList.add('unlocked');
+    return;
+  }
+
+  function check() {
+    if (input.value.trim() === PASSWORD) {
+      sessionStorage.setItem('_pw_ok', PASSWORD);
+      gate.classList.add('unlocked');
+    } else {
+      msg.textContent = '密码错误，请重试';
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  btn.addEventListener('click', check);
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') check();
+  });
+  input.focus();
+
+  // 阻止未解锁时的交互穿透到下层页面
+  gate.addEventListener('click', function(e) { e.stopPropagation(); });
+  gate.addEventListener('touchend', function(e) { e.stopPropagation(); });
+})();
+</script>
 
 <div class="progress-bar" id="progress-bar"></div>
 <button class="btn-back hidden" id="btn-back" aria-label="返回上一屏">← 返回上一页</button>
