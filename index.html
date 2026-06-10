@@ -413,19 +413,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.2rem;
+    gap: 1rem;
     transition: opacity 0.5s ease, visibility 0.5s ease;
   }
   .pw-gate.unlocked {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-  }
-  .pw-gate-label {
-    font-family: 'Noto Sans SC', sans-serif;
-    font-size: 0.85rem;
-    color: var(--warm-white-60);
-    letter-spacing: 0.15em;
   }
   .pw-gate-input {
     font-family: 'Inter', 'Noto Sans SC', sans-serif;
@@ -462,57 +456,64 @@
     transform: scale(1.04);
     box-shadow: 0 0 20px rgba(228,0,127,0.35);
   }
-  .pw-gate-msg {
-    font-size: 0.8rem;
-    color: #ff6b8a;
-    min-height: 1.2em;
-    transition: opacity 0.3s ease;
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    15% { transform: translateX(-8px); }
+    30% { transform: translateX(8px); }
+    45% { transform: translateX(-6px); }
+    60% { transform: translateX(6px); }
+    75% { transform: translateX(-3px); }
+    90% { transform: translateX(3px); }
   }
+
+  /* ── Global ── */
+  .screen {
 </style>
 </head>
 <body>
 
 <!-- ═══ 密码验证层 ═══ -->
 <div class="pw-gate" id="pw-gate">
-  <div class="pw-gate-label">请输入密码以继续</div>
   <input type="password" class="pw-gate-input" id="pw-input" placeholder="······" maxlength="10" autocomplete="off">
-  <button class="pw-gate-btn" id="pw-btn">验证</button>
-  <div class="pw-gate-msg" id="pw-msg"></div>
+  <button class="pw-gate-btn" id="pw-btn">确认</button>
 </div>
 <script>
 (function() {
   var gate = document.getElementById('pw-gate');
   var input = document.getElementById('pw-input');
   var btn = document.getElementById('pw-btn');
-  var msg = document.getElementById('pw-msg');
   var PASSWORD = '271214';
 
-  // 已通过验证 → 直接放行
+  // 已通过验证 → 直接放行，但不 return，让后续初始化代码正常执行
   if (sessionStorage.getItem('_pw_ok') === PASSWORD) {
-    gate.classList.add('unlocked');
-    return;
-  }
+    if (gate) gate.classList.add('unlocked');
+  } else {
+    // 需要输入密码时，才绑定事件和显示层
+    if (gate && input && btn) {
+      function check() {
+        if (input.value.trim() === PASSWORD) {
+          sessionStorage.setItem('_pw_ok', PASSWORD);
+          gate.classList.add('unlocked');
+        } else {
+          input.style.animation = 'none';
+          void input.offsetWidth;
+          input.style.animation = 'shake 0.4s ease';
+          input.value = '';
+          input.focus();
+        }
+      }
 
-  function check() {
-    if (input.value.trim() === PASSWORD) {
-      sessionStorage.setItem('_pw_ok', PASSWORD);
-      gate.classList.add('unlocked');
-    } else {
-      msg.textContent = '密码错误，请重试';
-      input.value = '';
+      btn.addEventListener('click', check);
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') check();
+      });
       input.focus();
+
+      // 阻止未解锁时的交互穿透到下层页面
+      gate.addEventListener('click', function(e) { e.stopPropagation(); });
+      gate.addEventListener('touchend', function(e) { e.stopPropagation(); });
     }
   }
-
-  btn.addEventListener('click', check);
-  input.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') check();
-  });
-  input.focus();
-
-  // 阻止未解锁时的交互穿透到下层页面
-  gate.addEventListener('click', function(e) { e.stopPropagation(); });
-  gate.addEventListener('touchend', function(e) { e.stopPropagation(); });
 })();
 </script>
 
@@ -939,6 +940,7 @@
   function wireBig666(big666, hint, expl, btn, txt) {
     big666.onclick = (ev) => {
       ev.stopPropagation();
+      if (window._isTsukkomiRunning) return;
       if (localStorage.getItem('lcs_tsukkomi_done') === 'true') {
         createConfetti();
         return;
@@ -951,15 +953,22 @@
   // Roast Theater — one-time experience
   // ══════════════════════════════════════
   function startTsukkomiTheater(big666, hint, expl, btn, txt) {
+    // ── Anti-reentry lock ──
+    if (window._isTsukkomiRunning) return;
+    window._isTsukkomiRunning = true;
+
+    const screen = big666.closest('.screen');
+    if (!screen) { window._isTsukkomiRunning = false; return; }
+
+    // ── Purge all previous theater elements ──
+    screen.querySelectorAll('.roast-btn, .roast-text, .roast-sub, .roast-arrow, .falling-number').forEach(function(el) { el.remove(); });
+
     // Hide big666, explanation, and old elements during theater
     big666.classList.remove('show');
     if (expl) expl.classList.remove('show');
     if (hint) hint.classList.remove('show');
     if (btn) btn.style.opacity = '0';
     if (txt) txt.style.opacity = '0';
-
-    const screen = big666.closest('.screen');
-    if (!screen) return;
 
     // Helper: append an element to the screen with a class, return it
     function makeEl(tag, cls, html) {
@@ -1059,13 +1068,36 @@
                                   delay(2500, () => {
                                     hide(none, () => {
                                       none.remove();
-                                      // ── Step 8: Restore big666 ──
-                                      localStorage.setItem('lcs_tsukkomi_done', 'true');
-                                      if (expl) expl.classList.add('show');
-                                      big666.classList.add('show');
-                                      wireBig666(big666, hint, expl, btn, txt);
-                                      // Clean up remaining elements
-                                      screen.querySelectorAll('.roast-btn,.roast-text,.roast-sub,.roast-arrow').forEach(el => el.remove());
+                                      // ── Step 8: 朋友圈过渡页 ──
+                                      const wechatLine1 = makeEl('div', 'roast-sub');
+                                      wechatLine1.style.cssText += 'font-size:1.5rem;margin-bottom:0.3rem;';
+                                      wechatLine1.textContent = '发一条朋友圈？';
+                                      const wechatLine2 = makeEl('div', 'roast-sub');
+                                      wechatLine2.style.cssText += 'font-size:1.5rem;';
+                                      wechatLine2.textContent = '你自己决定';
+                                      show(wechatLine1);
+                                      delay(200, () => show(wechatLine2));
+
+                                      let autoTimer = setTimeout(doRestore, 5000);
+
+                                      function doRestore() {
+                                        clearTimeout(autoTimer);
+                                        hide(wechatLine1, () => {});
+                                        hide(wechatLine2, () => {
+                                          wechatLine1.remove(); wechatLine2.remove();
+                                          // ── Restore big666 ──
+                                          localStorage.setItem('lcs_tsukkomi_done', 'true');
+                                          if (expl) expl.classList.add('show');
+                                          big666.classList.add('show');
+                                          wireBig666(big666, hint, expl, btn, txt);
+                                          // Purge any lingering theater elements
+                                          screen.querySelectorAll('.roast-btn, .roast-text, .roast-sub, .roast-arrow, .falling-number').forEach(function(el) { el.remove(); });
+                                          window._isTsukkomiRunning = false;
+                                        });
+                                      }
+
+                                      wechatLine1.onclick = (ev8) => { ev8.stopPropagation(); doRestore(); };
+                                      wechatLine2.onclick = (ev9) => { ev9.stopPropagation(); doRestore(); };
                                     });
                                   });
                                 });
